@@ -37,7 +37,6 @@ EOT;
 
 $namespace = null;
 $shortName = null;
-$extractorVer = null;
 
 //var_dump($argv); die;
 
@@ -53,12 +52,6 @@ foreach ($argv as $arg) {
 		$shortName = $argArr[1];
 		continue;
 	}
-
-	if (false !== strstr($arg, '--ex-bundle-version')) {
-		$argArr = explode('=', $arg);
-		$extractorVer = $argArr[1];
-		continue;
-	}
 }
 
 
@@ -72,11 +65,6 @@ if ($shortName == null) {
 	$shortName = fgets(STDIN);
 }
 
-if ($extractorVer == null) {
-	$extractorVer = "~1.0.0";
-}
-
-
 
 // create parameters.yml
 
@@ -86,7 +74,7 @@ print 'OK' . PHP_EOL;
 
 // create composer.json
 print str_pad('Creating composer.json', 50, ' ');
-createComposerJson($namespace, $shortName, $extractorVer);
+createComposerJson($namespace, $shortName);
 print 'OK' . PHP_EOL;
 
 // download composer
@@ -100,9 +88,6 @@ passthru('php -d memory_limit=-1 composer.phar install');
 // generate component
 print str_pad('Generating component skeleton', 50, ' ');
 passthru('php vendor/keboola/syrup/app/console syrup:generate:component --namespace="'.$namespace.'" --short-name="'.$shortName.'"');
-
-passthru('php ./vendor/keboola/syrup/app/console syrup:register-bundle Keboola/ExtractorBundle');
-passthru('php ./vendor/keboola/syrup/app/console extractor:generate-extractor');
 
 function printError($message)
 {
@@ -141,7 +126,7 @@ EOT;
 	file_put_contents($filename, $content);
 }
 
-function createComposerJson($namespace, $shortName, $extractorVer)
+function createComposerJson($namespace, $shortName)
 {
 	$json = [
 		'name'  => strtolower($namespace),
@@ -151,7 +136,7 @@ function createComposerJson($namespace, $shortName, $extractorVer)
 		'authors'   => [],
 		'repositories'  => [],
 		'require'   => [
-			'keboola/extractor-bundle'    => $extractorVer
+			'syrup/component-bundle'    => '~1.9.23'
 		],
 		'require-dev'   => [
 			'phpunit/phpunit'   => '3.7.*'
