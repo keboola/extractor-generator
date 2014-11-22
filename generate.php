@@ -148,7 +148,7 @@ if (!empty($parser)) {
 	$exCommand .= " --parser={$parser}";
 }
 
-if (!empty($apiType)) {
+if (!empty($oauth)) {
 	$exCommand .= " --oauth={$oauth}";
 }
 
