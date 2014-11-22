@@ -9,25 +9,27 @@ $version = '0.0.1';
 
 //print "" . PHP_EOL . PHP_EOL;
 print <<<EOT
-  ██████▓██   ██▓ ██▀███   █    ██  ██▓███
-▒██    ▒ ▒██  ██▒▓██ ▒ ██▒ ██  ▓██▒▓██░  ██▒
-░ ▓██▄    ▒██ ██░▓██ ░▄█ ▒▓██  ▒██░▓██░ ██▓▒
-  ▒   ██▒ ░ ▐██▓░▒██▀▀█▄  ▓▓█  ░██░▒██▄█▓▒ ▒
-▒██████▒▒ ░ ██▒▓░░██▓ ▒██▒▒▒█████▓ ▒██▒ ░  ░
-▒ ▒▓▒ ▒ ░  ██▒▒▒ ░ ▒▓ ░▒▓░░▒▓▒ ▒ ▒ ▒▓▒░ ░  ░
-░ ░▒  ░ ░▓██ ░▒░   ░▒ ░ ▒░░░▒░ ░ ░ ░▒ ░
-░  ░  ░  ▒ ▒ ░░    ░░   ░  ░░░ ░ ░ ░░
-      ░  ░ ░        ░        ░
-         ░ ░
-
-Syrup Component Generator v$version
+▓█████ ▒██   ██▒▄▄▄█████▓ ██▀███   ▄▄▄       ▄████▄  ▄▄▄█████▓ ▒█████   ██▀███
+▓█   ▀ ▒▒ █ █ ▒░▓  ██▒ ▓▒▓██ ▒ ██▒▒████▄    ▒██▀ ▀█  ▓  ██▒ ▓▒▒██▒  ██▒▓██ ▒ ██▒
+▒███   ░░  █   ░▒ ▓██░ ▒░▓██ ░▄█ ▒▒██  ▀█▄  ▒▓█    ▄ ▒ ▓██░ ▒░▒██░  ██▒▓██ ░▄█ ▒
+▒▓█  ▄  ░ █ █ ▒ ░ ▓██▓ ░ ▒██▀▀█▄  ░██▄▄▄▄██ ▒▓▓▄ ▄██▒░ ▓██▓ ░ ▒██   ██░▒██▀▀█▄
+░▒████▒▒██▒ ▒██▒  ▒██▒ ░ ░██▓ ▒██▒ ▓█   ▓██▒▒ ▓███▀ ░  ▒██▒ ░ ░ ████▓▒░░██▓ ▒██▒
+░░ ▒░ ░▒▒ ░ ░▓ ░  ▒ ░░   ░ ▒▓ ░▒▓░ ▒▒   ▓▒█░░ ░▒ ▒  ░  ▒ ░░   ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░
+ ░ ░  ░░░   ░▒ ░    ░      ░▒ ░ ▒░  ▒   ▒▒ ░  ░  ▒       ░      ░ ▒ ▒░   ░▒ ░ ▒░
+   ░    ░    ░    ░        ░░   ░   ░   ▒   ░          ░      ░ ░ ░ ▒    ░░   ░
+   ░  ░ ░    ░              ░           ░  ░░ ░                   ░ ░     ░
+                                            ░
+Keboola Extractor Generator v$version
+(forked from Syrup Component generator
+https://github.com/keboola/syrup-component-generator)
 
 You can provide --namespace and --short-name either as arguments or via interactive interface.
 (Note that namespace must contain Bundle at the end).
 
 Options:
---namespace     - Namespace of your component ie. "Keboola/DbExtractorBundle"
---short-name    - Short name for you component ie. "ex-db"
+--namespace     		- Namespace of your component ie. "Keboola/DbExtractorBundle"
+--short-name    		- Short name for you component ie. "ex-db"
+--ex-bundle-version		- Version of Extractor bundle to use ie. "~1.0.0" [default: ~1.0.0](composer version string)
 
 Example:
 php generate.php --namespace="Keboola/DbExtractorBundle" --short-name="ex-db"
@@ -37,7 +39,12 @@ EOT;
 
 $namespace = null;
 $shortName = null;
+// Extractor
 $extractorVer = null;
+$apiType = null;
+$parser = null;
+$oauth = null;
+$cnfColumns = null;
 
 //var_dump($argv); die;
 
@@ -59,6 +66,30 @@ foreach ($argv as $arg) {
 		$extractorVer = $argArr[1];
 		continue;
 	}
+
+	if (false !== strstr($arg, '--api-type')) {
+		$argArr = explode('=', $arg);
+		$apiType = $argArr[1];
+		continue;
+	}
+
+	if (false !== strstr($arg, '--parser')) {
+		$argArr = explode('=', $arg);
+		$parser = $argArr[1];
+		continue;
+	}
+
+	if (false !== strstr($arg, '--oauth')) {
+		$argArr = explode('=', $arg);
+		$oauth = $argArr[1];
+		continue;
+	}
+
+	if (false !== strstr($arg, '--config-columns')) {
+		$argArr = explode('=', $arg);
+		$cnfColumns = $argArr[1];
+		continue;
+	}
 }
 
 
@@ -75,8 +106,9 @@ if ($shortName == null) {
 if ($extractorVer == null) {
 	$extractorVer = "~1.0.0";
 }
+print "Using Extractor bundle version '{$extractorVer}'" . PHP_EOL;
 
-
+$classPrefix = str_replace("Keboola/", "", str_replace("ExtractorBundle", "", $namespace));
 
 // create parameters.yml
 
@@ -86,7 +118,7 @@ print 'OK' . PHP_EOL;
 
 // create composer.json
 print str_pad('Creating composer.json', 50, ' ');
-createComposerJson($namespace, $shortName, $extractorVer);
+createComposerJson($namespace, $shortName, $extractorVer, $classPrefix);
 print 'OK' . PHP_EOL;
 
 // download composer
@@ -101,8 +133,30 @@ passthru('php -d memory_limit=-1 composer.phar install');
 print str_pad('Generating component skeleton', 50, ' ');
 passthru('php vendor/keboola/syrup/app/console syrup:generate:component --namespace="'.$namespace.'" --short-name="'.$shortName.'"');
 
+// Register ex-bundle
 passthru('php ./vendor/keboola/syrup/app/console syrup:register-bundle Keboola/ExtractorBundle');
-passthru('php ./vendor/keboola/syrup/app/console extractor:generate-extractor');
+
+$exCommand = 'php ./vendor/keboola/syrup/app/console extractor:generate-extractor \
+--app-name="'.$shortName.'" \
+--class-prefix="' . $classPrefix . '"';
+//  --api-type=json --parser=json --oauth=2 for --no-interactive
+if (!empty($apiType)) {
+	$exCommand .= " --api-type={$apiType}";
+}
+
+if (!empty($parser)) {
+	$exCommand .= " --parser={$parser}";
+}
+
+if (!empty($apiType)) {
+	$exCommand .= " --oauth={$oauth}";
+}
+
+if (!empty($cnfColumns)) {
+	$exCommand .= " --config-columns={$cnfColumns}";
+}
+// Create extractor
+passthru($exCommand);
 
 function printError($message)
 {
@@ -141,10 +195,10 @@ EOT;
 	file_put_contents($filename, $content);
 }
 
-function createComposerJson($namespace, $shortName, $extractorVer)
+function createComposerJson($namespace, $shortName, $extractorVer, $classPrefix)
 {
 	$json = [
-		'name'  => strtolower($namespace),
+		'name'  => "keboola/" . strtolower($classPrefix) . "-extractor-bundle",
 		'type'  => 'symfony-bundle',
 		'description'   => 'Some new component',
 		'keywords'  => [],
@@ -185,5 +239,5 @@ function createComposerJson($namespace, $shortName, $extractorVer)
 
 	$filename = 'composer.json';
 	fopen($filename, 'w+');
-	file_put_contents($filename, json_encode($json));
+	file_put_contents($filename, json_encode($json, JSON_PRETTY_PRINT));
 }
