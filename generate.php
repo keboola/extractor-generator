@@ -95,12 +95,12 @@ foreach ($argv as $arg) {
 
 if ($namespace == null) {
 	print "Enter namespace for your component (ie.: Keboola/DbExtractorBundle): " . PHP_EOL;
-	$namespace = stream_get_line(STDIN, 128);
+	$namespace = stream_get_line(STDIN, 128, "\n");
 }
 
 if ($shortName == null) {
 	print "Enter short name for your component (ie.: ex-db): " . PHP_EOL;
-	$shortName = stream_get_line(STDIN, 64);
+	$shortName = stream_get_line(STDIN, 64, "\n");
 }
 
 if ($extractorVer == null) {
