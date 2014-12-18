@@ -5,7 +5,7 @@
  * Time: 17:30
  */
 
-$version = '0.0.1';
+$version = '0.0.2';
 
 //print "" . PHP_EOL . PHP_EOL;
 print <<<EOT
@@ -29,7 +29,7 @@ You can provide --namespace and --short-name either as arguments or via interact
 Options:
 --namespace     		- Namespace of your component ie. "Keboola/DbExtractorBundle"
 --short-name    		- Short name for you component ie. "ex-db"
---ex-bundle-version		- Version of Extractor bundle to use ie. "~1.0.0" [default: ~1.0.0](composer version string)
+--ex-bundle-version		- Version of Extractor bundle to use ie. "~1.1.0" [default: ~1.1.0](composer version string)
 
 Example:
 php generate.php --namespace="Keboola/DbExtractorBundle" --short-name="ex-db"
@@ -104,7 +104,7 @@ if ($shortName == null) {
 }
 
 if ($extractorVer == null) {
-	$extractorVer = "~1.0.0";
+	$extractorVer = "~1.1.0";
 }
 print "Using Extractor bundle version '{$extractorVer}'" . PHP_EOL;
 
